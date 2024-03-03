@@ -21,7 +21,7 @@ ufo <- readr::read_csv("ufo_data/complete.csv", na = c("", "unkown")) %>% clean_
 ```{r}
 glimpse(ufo)
 ```
-Remove unnecessary data
+Remove unnecessary data, seperate dates, and filter out anything not in the US. 
 ```{r}
 ufo2 <- ufo %>%
   separate(datetime, into = c("day", "month","year"), sep="/") %>%

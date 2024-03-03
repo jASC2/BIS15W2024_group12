@@ -1,0 +1,33 @@
+---
+title: "ufo"
+output: html_document
+date: "2024-03-03"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library("tidyverse")
+library("naniar")
+library("janitor")
+```
+
+Import data and fill the NA's 
+```{r}
+ufo <- readr::read_csv("ufo_data/complete.csv", na = c("", "unkown")) %>% clean_names
+```
+```{r}
+glimpse(ufo)
+```
+Remove unnecessary data
+```{r}
+ufo2 <- ufo %>%
+  separate(datetime, into = c("day", "month","year"), sep="/") %>%
+  separate(year, into = c("year", "time"), sep = " ") %>%
+  select(-duration_hours_min, -comments, -date_posted) %>%
+  filter(country=="us")
+ufo2
+```
+

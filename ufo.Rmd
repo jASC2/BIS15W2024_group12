@@ -1,6 +1,8 @@
 ---
 title: "ufo"
-output: html_document
+output: 
+  html_document: 
+    keep_md: true
 date: "2024-03-03"
 ---
 
@@ -12,12 +14,14 @@ knitr::opts_chunk$set(echo = TRUE)
 library("tidyverse")
 library("naniar")
 library("janitor")
+library("ggmap")
 ```
 
 Import data and fill the NA's 
 ```{r}
 ufo <- readr::read_csv("ufo_data/complete.csv", na = c("", "unkown")) %>% clean_names
 ```
+
 ```{r}
 glimpse(ufo)
 ```
@@ -30,4 +34,88 @@ ufo2 <- ufo %>%
   filter(country=="us")
 ufo2
 ```
+Loading API key
+```{r}
+register_stadiamaps("aff428bd-8ad7-4b69-8b6b-b34301483ba9", write = FALSE)
+```
 
+Converting lat and long to numeric
+```{r}
+ufo2$latitude <- as.numeric(ufo2$latitude)
+ufo2$longitude <- as.numeric(ufo2$longitude)
+```
+
+Bounding for Map
+```{r}
+ufo2 %>% 
+  select(latitude, longitude) %>% 
+  summary()
+```
+
+```{r}
+latitude <- c(17.97, 70.67)
+longitude <- c(-176.66, -65.83)
+alien_bbox <- make_bbox(longitude, latitude, f = 0.03)
+```
+
+Load Map from Stamen
+```{r}
+alien_map <-  get_stadiamap(alien_bbox, maptype = "stamen_terrain", zoom=5)
+```
+
+Final Map
+```{r}
+ggmap(alien_map) + 
+  geom_point(data = ufo2, aes(longitude, latitude), size=0.1) +
+  labs(x= "Longitude", y= "Latitude", title="UFO Sightings in the U.S")
+```
+Plot of Sightings Over The Years
+```{r}
+names(ufo2)
+```
+
+```{r}
+ufo2$year <- as.numeric(ufo2$year)
+```
+Table of Yearly Sightings in Desc Order
+```{r}
+ufo2 %>% 
+  group_by(year) %>% 
+  summarise(sightings = n()) %>% 
+  arrange(desc(sightings))
+```
+
+```{r}
+sightings_summary <- ufo2 %>% 
+  group_by(year) %>% 
+  summarise(sightings = n())
+```
+
+Final Plot
+Feel free to color this however. Was also debating having it as a line plot. LMK
+```{r}
+sightings_summary %>% 
+  ggplot(aes(x = year, y = sightings, group = year))+
+  geom_col(position = "dodge")+
+  labs(title = "UFO Sightings Over the Years (1910-2014)")+
+  theme_bw()
+```
+Plot of Timings Per State
+Feel free to change the plot type
+```{r}
+ufo2_avg_time <- ufo2 %>% 
+  filter(!is.na(duration_seconds & duration_seconds != 0)) %>% 
+  group_by(state) %>% 
+  summarise(avg_secs = mean(duration_seconds))
+```
+
+```{r}
+ufo2_avg_time %>%
+  ggplot(aes(x = state, y = avg_secs))+
+  geom_col()+
+  labs(title = "Average Duration of UFO Sightings by State",
+       x = "State",
+       y= "Duration (Seconds)")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+^^ THis plot is a work in progress

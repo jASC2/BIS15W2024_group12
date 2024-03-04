@@ -11,10 +11,18 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+#install.packages("paletteer")
+```
+
+
+```{r}
 library("tidyverse")
 library("naniar")
 library("janitor")
 library("ggmap")
+library("dplyr")
+library(RColorBrewer)
+library(paletteer)
 ```
 
 Import data and fill the NA's 
@@ -86,20 +94,34 @@ ufo2 %>%
 ```
 
 ```{r}
-sightings_summary <- ufo2 %>% 
+sightings_summary <- ufo2 %>%
+  filter(!is.na(year)) %>% 
   group_by(year) %>% 
   summarise(sightings = n())
 ```
 
 Final Plot
 Feel free to color this however. Was also debating having it as a line plot. LMK
+
 ```{r}
-sightings_summary %>% 
-  ggplot(aes(x = year, y = sightings, group = year))+
-  geom_col(position = "dodge")+
-  labs(title = "UFO Sightings Over the Years (1910-2014)")+
-  theme_bw()
+ggplot(sightings_summary, aes(x = year, y = sightings, group = year, na.rm = T))+
+  geom_col(position = "dodge", na.rm = T)+
+  labs(title = "UFO Sightings Over the Years (1910-2014)",
+       x= "Year",
+       y = "Number of Sightings")+
+  theme_minimal()
+
 ```
+THis plot is the same as above but in a line idk if this is better or not
+```{r}
+ggplot(sightings_summary, aes(x = year, y = sightings))+
+  geom_line()+
+  labs(title = "UFO Sightings Over the Years (1910-2014)",
+       x= "Year",
+       y = "Number of Sightings")+
+  theme_minimal()
+```
+
 Plot of Timings Per State
 Feel free to change the plot type
 ```{r}

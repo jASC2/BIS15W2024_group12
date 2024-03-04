@@ -10,6 +10,12 @@ date: "2024-03-03"
 
 
 ```r
+#install.packages("paletteer")
+```
+
+
+
+```r
 library("tidyverse")
 ```
 
@@ -49,6 +55,16 @@ library("ggmap")
 ##   Stadia Maps' Terms of Service: <https://stadiamaps.com/terms-of-service/>
 ##   OpenStreetMap's Tile Usage Policy: <https://operations.osmfoundation.org/policies/tiles/>
 ## ℹ Please cite ggmap if you use it! Use `citation("ggmap")` for details.
+```
+
+```r
+library("dplyr")
+library(RColorBrewer)
+library(paletteer)
+```
+
+```
+## Warning: package 'paletteer' was built under R version 4.3.3
 ```
 
 Import data and fill the NA's 
@@ -183,7 +199,7 @@ ggmap(alien_map) +
   labs(x= "Longitude", y= "Latitude", title="UFO Sightings in the U.S")
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
 Plot of Sightings Over The Years
 
 ```r
@@ -228,7 +244,8 @@ ufo2 %>%
 
 
 ```r
-sightings_summary <- ufo2 %>% 
+sightings_summary <- ufo2 %>%
+  filter(!is.na(year)) %>% 
   group_by(year) %>% 
   summarise(sightings = n())
 ```
@@ -236,15 +253,30 @@ sightings_summary <- ufo2 %>%
 Final Plot
 Feel free to color this however. Was also debating having it as a line plot. LMK
 
+
 ```r
-sightings_summary %>% 
-  ggplot(aes(x = year, y = sightings, group = year))+
-  geom_col(position = "dodge")+
-  labs(title = "UFO Sightings Over the Years (1910-2014)")+
-  theme_bw()
+ggplot(sightings_summary, aes(x = year, y = sightings, group = year, na.rm = T))+
+  geom_col(position = "dodge", na.rm = T)+
+  labs(title = "UFO Sightings Over the Years (1910-2014)",
+       x= "Year",
+       y = "Number of Sightings")+
+  theme_minimal()
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
+THis plot is the same as above but in a line idk if this is better or not
+
+```r
+ggplot(sightings_summary, aes(x = year, y = sightings))+
+  geom_line()+
+  labs(title = "UFO Sightings Over the Years (1910-2014)",
+       x= "Year",
+       y = "Number of Sightings")+
+  theme_minimal()
+```
+
+![](ufo_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
+
 Plot of Timings Per State
 Feel free to change the plot type
 
@@ -266,5 +298,5 @@ ufo2_avg_time %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
 ^^ THis plot is a work in progress

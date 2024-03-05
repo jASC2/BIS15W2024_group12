@@ -21,10 +21,10 @@ library("tidyverse")
 
 ```
 ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.3     ✔ readr     2.1.4
-## ✔ forcats   1.0.0     ✔ stringr   1.5.0
-## ✔ ggplot2   3.4.3     ✔ tibble    3.2.1
-## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+## ✔ dplyr     1.1.4     ✔ readr     2.1.5
+## ✔ forcats   1.0.0     ✔ stringr   1.5.1
+## ✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+## ✔ lubridate 1.9.3     ✔ tidyr     1.3.0
 ## ✔ purrr     1.0.2     
 ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
@@ -61,6 +61,10 @@ library("ggmap")
 library("dplyr")
 library("RColorBrewer")
 library("paletteer")
+```
+
+```
+## Warning: package 'paletteer' was built under R version 4.3.3
 ```
 
 ## Pre-processing the data set:
@@ -298,35 +302,24 @@ sightings_summary <- ufo2 %>%
   summarise(sightings = n())
 ```
 
-Feel free to color this however. Was also debating having it as a line plot. LMK
 ### Compiling the plot
 
 ```r
-ggplot(sightings_summary, aes(x = year, y = sightings, group = year, na.rm = T))+
-  geom_col(position = "dodge", na.rm = T)+
-  labs(title = "UFO Sightings Over the Years (1910-2014)",
-       x= "Year",
-       y = "Number of Sightings")+
-  #theme(axis.text.x=element_text(angle=60, hjust=1))+ This line wasn't working : / 
-  theme_minimal()
+sightings_summary$sightings <- as.numeric(sightings_summary$sightings)
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
-This plot is the same as above but in a line idk if this is better or not
-Wasn't showing up for me : / I'm team line plot though!
+
 
 ```r
-ggplot(sightings_summary, aes(x = year, y = sightings))+
-  geom_line()+
+ggplot(sightings_summary, aes(x = year, y = sightings, group = 1))+
+  geom_point(size = 1)+
+  geom_path(color = "blue")+
   labs(title = "UFO Sightings Over the Years (1910-2014)",
        x= "Year",
        y = "Number of Sightings")+
-  theme_minimal()
-```
-
-```
-## `geom_line()`: Each group consists of only one observation.
-## ℹ Do you need to adjust the group aesthetic?
+  scale_x_discrete(breaks = seq(1910,2014, by = 3))+
+  theme_minimal()+
+  theme(axis.text.x=element_text(size= 7.5,angle=70, hjust=0.5))
 ```
 
 ![](ufo_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
@@ -462,3 +455,7 @@ ufo2 %>%
 ```
 
 ![](ufo_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+
+```r
+#why are there still unknowns here?
+```

@@ -80,6 +80,9 @@ alien_bbox <- make_bbox(longitude, latitude, f = 0.03)
 ```{r}
 alien_map <-  get_stadiamap(alien_bbox, maptype = "stamen_terrain", zoom=5)
 ```
+```{r}
+ggmap(alien_map)
+```
 
 ### Compiling the final map
 ```{r}
@@ -129,8 +132,8 @@ ggplot(sightings_summary, aes(x = year, y = sightings, group = 1))+
 ### Creating a summary table of the average sighting duration in each state
 ```{r}
 ufo2_avg_time <- ufo2 %>% 
-  filter(!is.na(duration_seconds & duration_seconds != 0)) %>% 
-  group_by(state) %>% 
+  filter(!is.na(duration_seconds & duration_seconds != 0) & !is.na(shape)) %>% 
+  group_by(state, shape) %>% 
   summarise(avg_secs = mean(duration_seconds)) %>%
   arrange(desc(avg_secs))
 ufo2_avg_time
@@ -145,6 +148,13 @@ ufo2_avg_time %>%
        x = "State",
        y= "Duration (Seconds)")+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r}
+ggplot(ufo2, aes(x = longitude, y = latitude)) +
+  geom_tile(stat = "density2d", aes(fill = ..density..), color = "white") +
+  scale_fill_viridis_c() +  # Choose a color scale
+  labs(title = "Heatmap of UFO Sightings", x = "Longitude", y = "Latitude", fill = "Density") +
+  theme_minimal()
 ```
 
 ## Plotting the total number of sightings in each state

@@ -247,6 +247,12 @@ alien_map <-  get_stadiamap(alien_bbox, maptype = "stamen_terrain", zoom=5)
 ## ℹ 99 tiles needed, this may take a while (try a smaller zoom?)
 ```
 
+```r
+ggmap(alien_map)
+```
+
+![](ufo_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
 ### Compiling the final map
 
 ```r
@@ -255,7 +261,7 @@ ggmap(alien_map) +
   labs(x= "Longitude", y= "Latitude", title="UFO Sightings in the U.S")
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 ## Ploting the number of UFO sightings over the years
 
 ```r
@@ -322,35 +328,44 @@ ggplot(sightings_summary, aes(x = year, y = sightings, group = 1))+
   theme(axis.text.x=element_text(size= 7.5,angle=70, hjust=0.5))
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
 
 ## Plotting the distribution of sighting duration in each state
 ### Creating a summary table of the average sighting duration in each state
 
 ```r
 ufo2_avg_time <- ufo2 %>% 
-  filter(!is.na(duration_seconds & duration_seconds != 0)) %>% 
-  group_by(state) %>% 
+  filter(!is.na(duration_seconds & duration_seconds != 0) & !is.na(shape)) %>% 
+  group_by(state, shape) %>% 
   summarise(avg_secs = mean(duration_seconds)) %>%
   arrange(desc(avg_secs))
+```
+
+```
+## `summarise()` has grouped output by 'state'. You can override using the
+## `.groups` argument.
+```
+
+```r
 ufo2_avg_time
 ```
 
 ```
-## # A tibble: 52 × 2
-##    state avg_secs
-##    <fct>    <dbl>
-##  1 ar     104347.
-##  2 hi      24404.
-##  3 fl      13469.
-##  4 wa      13371.
-##  5 ct      12983.
-##  6 la      11473.
-##  7 va       9875.
-##  8 ms       8211.
-##  9 ga       7019.
-## 10 wv       6075.
-## # ℹ 42 more rows
+## # A tibble: 1,063 × 3
+## # Groups:   state [52]
+##    state shape    avg_secs
+##    <fct> <fct>       <dbl>
+##  1 ar    light     514485.
+##  2 ms    cylinder  202558 
+##  3 hi    circle    186041 
+##  4 la    unknown   171651.
+##  5 va    fireball  118624.
+##  6 wv    fireball  105922.
+##  7 fl    light      67286.
+##  8 wa    light      59397.
+##  9 az    flash      59381.
+## 10 nj    cigar      55206.
+## # ℹ 1,053 more rows
 ```
 
 ### Compiling the plot
@@ -365,7 +380,25 @@ ufo2_avg_time %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
+
+```r
+ggplot(ufo2, aes(x = longitude, y = latitude)) +
+  geom_tile(stat = "density2d", aes(fill = ..density..), color = "white") +
+  scale_fill_viridis_c() +  # Choose a color scale
+  labs(title = "Heatmap of UFO Sightings", x = "Longitude", y = "Latitude", fill = "Density") +
+  theme_minimal()
+```
+
+```
+## Warning: The dot-dot notation (`..density..`) was deprecated in ggplot2 3.4.0.
+## ℹ Please use `after_stat(density)` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+```
+
+![](ufo_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
 
 ## Plotting the total number of sightings in each state
 ### Creating a summary table of the total recorded sightings in each state
@@ -409,7 +442,7 @@ ufo2 %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
 
 ## Plotting the frequency of sightings organized by shape
 ### Creating a summary table of the total recorded sightings in each state
@@ -454,7 +487,7 @@ ufo2 %>%
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-24-1.png)<!-- -->
 
 ```r
 #why are there still unknowns here?

@@ -196,4 +196,5 @@ ufo2 %>%
        x = "Shape",
        y= "Number of Sightings")+
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
+#why are there still unknowns here?
 ```

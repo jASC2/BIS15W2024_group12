@@ -1,5 +1,5 @@
 ---
-title: "ufo"
+title: "BIS015L Group Project On UFO Sightings: Data Processing, Analysis, and Visualization Script"
 output: 
   html_document: 
     keep_md: true
@@ -8,11 +8,11 @@ date: "2024-03-03"
 
 
 
+## Installing & loading any required packages:
 
 ```r
 #install.packages("paletteer")
 ```
-
 
 
 ```r
@@ -21,10 +21,10 @@ library("tidyverse")
 
 ```
 ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.4     ✔ readr     2.1.5
-## ✔ forcats   1.0.0     ✔ stringr   1.5.1
-## ✔ ggplot2   3.4.4     ✔ tibble    3.2.1
-## ✔ lubridate 1.9.3     ✔ tidyr     1.3.0
+## ✔ dplyr     1.1.3     ✔ readr     2.1.4
+## ✔ forcats   1.0.0     ✔ stringr   1.5.0
+## ✔ ggplot2   3.4.3     ✔ tibble    3.2.1
+## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
 ## ✔ purrr     1.0.2     
 ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
@@ -59,15 +59,13 @@ library("ggmap")
 
 ```r
 library("dplyr")
-library(RColorBrewer)
-library(paletteer)
+library("RColorBrewer")
+library("paletteer")
 ```
 
-```
-## Warning: package 'paletteer' was built under R version 4.3.3
-```
+## Pre-processing the data set:
 
-Import data and fill the NA's 
+### Importing the data and assigning "NA" to any missing values
 
 ```r
 ufo <- readr::read_csv("ufo_data/complete.csv", na = c("", "unkown")) %>% clean_names
@@ -91,6 +89,7 @@ ufo <- readr::read_csv("ufo_data/complete.csv", na = c("", "unkown")) %>% clean_
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 ```
 
+### Inspecting its basic structure
 
 ```r
 glimpse(ufo)
@@ -111,48 +110,101 @@ glimpse(ufo)
 ## $ latitude           <chr> "29.8830556", "29.38421", "53.2", "28.9783333", "21…
 ## $ longitude          <chr> "-97.9411111", "-98.581082", "-2.916667", "-96.6458…
 ```
-Remove unnecessary data, seperate dates, and filter out anything not in the US. 
+
+
+```r
+summary(ufo)
+```
+
+```
+##    datetime             city              state             country         
+##  Length:88875       Length:88875       Length:88875       Length:88875      
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##                                                                             
+##                                                                             
+##                                                                             
+##                                                                             
+##     shape           duration_seconds   duration_hours_min   comments        
+##  Length:88875       Min.   :       0   Length:88875       Length:88875      
+##  Class :character   1st Qu.:      15   Class :character   Class :character  
+##  Mode  :character   Median :     120   Mode  :character   Mode  :character  
+##                     Mean   :    8373                                        
+##                     3rd Qu.:     600                                        
+##                     Max.   :97836000                                        
+##                     NA's   :5                                               
+##  date_posted          latitude          longitude        
+##  Length:88875       Length:88875       Length:88875      
+##  Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character  
+##                                                          
+##                                                          
+##                                                          
+## 
+```
+
+### Removing unnecessary data, seperating dates, changing data types, and filtering out anything not in the US
 
 ```r
 ufo2 <- ufo %>%
   separate(datetime, into = c("day", "month","year"), sep="/") %>%
   separate(year, into = c("year", "time"), sep = " ") %>%
   select(-duration_hours_min, -comments, -date_posted) %>%
-  filter(country=="us")
+  mutate(year=as.factor(year)) %>%
+  mutate(latitude=as.numeric(latitude)) %>%
+  mutate(longitude=as.numeric(longitude)) %>%
+  mutate(shape=as.factor(shape)) %>%
+  mutate(state=as.factor(state)) %>%
+  filter(country=="us", latitude!=0, longitude!=0)
+```
+
+```
+## Warning: There was 1 warning in `mutate()`.
+## ℹ In argument: `latitude = as.numeric(latitude)`.
+## Caused by warning:
+## ! NAs introduced by coercion
+```
+
+```
+## Warning: There was 1 warning in `mutate()`.
+## ℹ In argument: `longitude = as.numeric(longitude)`.
+## Caused by warning:
+## ! NAs introduced by coercion
+```
+
+```r
 ufo2
 ```
 
 ```
 ## # A tibble: 70,293 × 11
 ##    day   month year  time  city    state country shape duration_seconds latitude
-##    <chr> <chr> <chr> <chr> <chr>   <chr> <chr>   <chr>            <dbl> <chr>   
-##  1 10    10    1949  20:30 san ma… tx    us      cyli…             2700 29.8830…
-##  2 10    10    1956  21:00 edna    tx    us      circ…               20 28.9783…
-##  3 10    10    1960  20:00 kaneohe hi    us      light              900 21.4180…
-##  4 10    10    1961  19:00 bristol tn    us      sphe…              300 36.5950…
-##  5 10    10    1965  23:45 norwalk ct    us      disk              1200 41.1175…
-##  6 10    10    1966  20:00 pell c… al    us      disk               180 33.5861…
-##  7 10    10    1966  21:00 live o… fl    us      disk               120 30.2947…
-##  8 10    10    1968  13:00 hawtho… ca    us      circ…              300 33.9163…
-##  9 10    10    1968  19:00 brevard nc    us      fire…              180 35.2333…
-## 10 10    10    1970  16:00 bellmo… ny    us      disk              1800 40.6686…
+##    <chr> <chr> <fct> <chr> <chr>   <fct> <chr>   <fct>            <dbl>    <dbl>
+##  1 10    10    1949  20:30 san ma… tx    us      cyli…             2700     29.9
+##  2 10    10    1956  21:00 edna    tx    us      circ…               20     29.0
+##  3 10    10    1960  20:00 kaneohe hi    us      light              900     21.4
+##  4 10    10    1961  19:00 bristol tn    us      sphe…              300     36.6
+##  5 10    10    1965  23:45 norwalk ct    us      disk              1200     41.1
+##  6 10    10    1966  20:00 pell c… al    us      disk               180     33.6
+##  7 10    10    1966  21:00 live o… fl    us      disk               120     30.3
+##  8 10    10    1968  13:00 hawtho… ca    us      circ…              300     33.9
+##  9 10    10    1968  19:00 brevard nc    us      fire…              180     35.2
+## 10 10    10    1970  16:00 bellmo… ny    us      disk              1800     40.7
 ## # ℹ 70,283 more rows
-## # ℹ 1 more variable: longitude <chr>
+## # ℹ 1 more variable: longitude <dbl>
 ```
-Loading API key
+
+```r
+#I tried to condense all the data set pre-processing under this one chunk. It seems to work, but it gives an error though idk why :/
+```
+## Creating a map of UFO sightings in the US
+### Loading API key
 
 ```r
 register_stadiamaps("aff428bd-8ad7-4b69-8b6b-b34301483ba9", write = FALSE)
 ```
 
-Converting lat and long to numeric
-
-```r
-ufo2$latitude <- as.numeric(ufo2$latitude)
-ufo2$longitude <- as.numeric(ufo2$longitude)
-```
-
-Bounding for Map
+### Creating a bounding box for the map
 
 ```r
 ufo2 %>% 
@@ -177,7 +229,7 @@ longitude <- c(-176.66, -65.83)
 alien_bbox <- make_bbox(longitude, latitude, f = 0.03)
 ```
 
-Load Map from Stamen
+### Load the map from Stamen
 
 ```r
 alien_map <-  get_stadiamap(alien_bbox, maptype = "stamen_terrain", zoom=5)
@@ -191,7 +243,7 @@ alien_map <-  get_stadiamap(alien_bbox, maptype = "stamen_terrain", zoom=5)
 ## ℹ 99 tiles needed, this may take a while (try a smaller zoom?)
 ```
 
-Final Map
+### Compiling the final map
 
 ```r
 ggmap(alien_map) + 
@@ -200,7 +252,7 @@ ggmap(alien_map) +
 ```
 
 ![](ufo_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
-Plot of Sightings Over The Years
+## Ploting the number of UFO sightings over the years
 
 ```r
 names(ufo2)
@@ -212,11 +264,7 @@ names(ufo2)
 ##  [9] "duration_seconds" "latitude"         "longitude"
 ```
 
-
-```r
-ufo2$year <- as.numeric(ufo2$year)
-```
-Table of Yearly Sightings in Desc Order
+### Creating a summary table of the yearly sightings listed in descending order
 
 ```r
 ufo2 %>% 
@@ -227,18 +275,18 @@ ufo2 %>%
 
 ```
 ## # A tibble: 84 × 2
-##     year sightings
-##    <dbl>     <int>
-##  1  2012      6750
-##  2  2013      6463
-##  3  2011      4666
-##  4  2008      4309
-##  5  2009      3937
-##  6  2010      3825
-##  7  2007      3732
-##  8  2004      3514
-##  9  2005      3458
-## 10  2003      3218
+##    year  sightings
+##    <fct>     <int>
+##  1 2012       6750
+##  2 2013       6463
+##  3 2011       4666
+##  4 2008       4309
+##  5 2009       3937
+##  6 2010       3825
+##  7 2007       3732
+##  8 2004       3514
+##  9 2005       3458
+## 10 2003       3218
 ## # ℹ 74 more rows
 ```
 
@@ -250,9 +298,8 @@ sightings_summary <- ufo2 %>%
   summarise(sightings = n())
 ```
 
-Final Plot
 Feel free to color this however. Was also debating having it as a line plot. LMK
-
+### Compiling the plot
 
 ```r
 ggplot(sightings_summary, aes(x = year, y = sightings, group = year, na.rm = T))+
@@ -260,11 +307,13 @@ ggplot(sightings_summary, aes(x = year, y = sightings, group = year, na.rm = T))
   labs(title = "UFO Sightings Over the Years (1910-2014)",
        x= "Year",
        y = "Number of Sightings")+
+  #theme(axis.text.x=element_text(angle=60, hjust=1))+ This line wasn't working : / 
   theme_minimal()
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
-THis plot is the same as above but in a line idk if this is better or not
+![](ufo_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
+This plot is the same as above but in a line idk if this is better or not
+Wasn't showing up for me : / I'm team line plot though!
 
 ```r
 ggplot(sightings_summary, aes(x = year, y = sightings))+
@@ -275,18 +324,43 @@ ggplot(sightings_summary, aes(x = year, y = sightings))+
   theme_minimal()
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
+```
+## `geom_line()`: Each group consists of only one observation.
+## ℹ Do you need to adjust the group aesthetic?
+```
 
-Plot of Timings Per State
-Feel free to change the plot type
+![](ufo_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
+
+## Plotting the distribution of sighting duration in each state
+### Creating a summary table of the average sighting duration in each state
 
 ```r
 ufo2_avg_time <- ufo2 %>% 
   filter(!is.na(duration_seconds & duration_seconds != 0)) %>% 
   group_by(state) %>% 
-  summarise(avg_secs = mean(duration_seconds))
+  summarise(avg_secs = mean(duration_seconds)) %>%
+  arrange(desc(avg_secs))
+ufo2_avg_time
 ```
 
+```
+## # A tibble: 52 × 2
+##    state avg_secs
+##    <fct>    <dbl>
+##  1 ar     104347.
+##  2 hi      24404.
+##  3 fl      13469.
+##  4 wa      13371.
+##  5 ct      12983.
+##  6 la      11473.
+##  7 va       9875.
+##  8 ms       8211.
+##  9 ga       7019.
+## 10 wv       6075.
+## # ℹ 42 more rows
+```
+
+### Compiling the plot
 
 ```r
 ufo2_avg_time %>%
@@ -298,5 +372,93 @@ ufo2_avg_time %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
-^^ THis plot is a work in progress
+![](ufo_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
+
+## Plotting the total number of sightings in each state
+### Creating a summary table of the total recorded sightings in each state
+
+```r
+ufo2 %>% 
+  group_by(state) %>% 
+  summarise(n_sightings = n()) %>%
+  arrange(desc(n_sightings))
+```
+
+```
+## # A tibble: 52 × 2
+##    state n_sightings
+##    <fct>       <int>
+##  1 ca           9575
+##  2 wa           4292
+##  3 fl           4155
+##  4 tx           3742
+##  5 ny           3234
+##  6 il           2698
+##  7 az           2617
+##  8 pa           2520
+##  9 oh           2464
+## 10 mi           1980
+## # ℹ 42 more rows
+```
+
+### Compiling the plot
+
+```r
+ufo2 %>% 
+  group_by(state) %>% 
+  summarise(n_sightings = n()) %>%
+  arrange(desc(n_sightings)) %>%
+  ggplot(aes(x = state, y = n_sightings))+
+  geom_col()+
+  labs(title = "Total Recorded UFO Sightings by State",
+       x = "State",
+       y= "Number of Sightings")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+![](ufo_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
+
+## Plotting the frequency of sightings organized by shape
+### Creating a summary table of the total recorded sightings in each state
+
+```r
+ufo2 %>% 
+  group_by(shape) %>% 
+  summarise(n_sightings = n()) %>%
+  arrange(desc(n_sightings))
+```
+
+```
+## # A tibble: 29 × 2
+##    shape    n_sightings
+##    <fct>          <int>
+##  1 light          14268
+##  2 triangle        6952
+##  3 circle          6650
+##  4 fireball        5364
+##  5 unknown         5077
+##  6 other           4836
+##  7 disk            4555
+##  8 sphere          4529
+##  9 oval            3260
+## 10 <NA>            2229
+## # ℹ 19 more rows
+```
+
+### Compiling the plot
+
+```r
+ufo2 %>% 
+  filter(!is.na(shape)) %>%
+  group_by(shape) %>% 
+  summarise(n_sightings = n()) %>%
+  arrange(desc(n_sightings)) %>%
+  ggplot(aes(x = shape, y = n_sightings))+
+    geom_col()+
+    labs(title = "Total Recorded UFO Sightings by Sighting Shape",
+       x = "Shape",
+       y= "Number of Sightings")+
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+![](ufo_files/figure-html/unnamed-chunk-22-1.png)<!-- -->

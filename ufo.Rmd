@@ -47,15 +47,13 @@ ufo2 <- ufo %>%
   separate(datetime, into = c("day", "month","year"), sep="/") %>%
   separate(year, into = c("year", "time"), sep = " ") %>%
   select(-duration_hours_min, -comments, -date_posted) %>%
+  filter(country=="us", latitude!=0, longitude!=0,  !is.na(latitude), !is.na(longitude)) %>%
   mutate(year=as.factor(year)) %>%
   mutate(latitude=as.numeric(latitude)) %>%
   mutate(longitude=as.numeric(longitude)) %>%
   mutate(shape=as.factor(shape)) %>%
-  mutate(state=as.factor(state)) %>%
-  filter(country=="us", latitude!=0, longitude!=0)
+  mutate(state=as.factor(state))
 ufo2
-
-#I tried to condense all the data set pre-processing under this one chunk. It seems to work, but it gives an error though idk why :/
 ```
 ## Creating a map of UFO sightings in the US
 ### Loading API key
@@ -88,7 +86,7 @@ ggmap(alien_map)
 ```{r}
 ggmap(alien_map) + 
   geom_point(data = ufo2, aes(longitude, latitude), size=0.1) +
-  labs(x= "Longitude", y= "Latitude", title="UFO Sightings in the U.S")
+  labs(x= "Longitude", y= "Latitude", title="UFO Sightings in the U.S (1910 - 2014)")
 ```
 ## Ploting the number of UFO sightings over the years
 ```{r}
@@ -125,7 +123,7 @@ ggplot(sightings_summary, aes(x = year, y = sightings, group = 1))+
        y = "Number of Sightings")+
   scale_x_discrete(breaks = seq(1910,2014, by = 3))+
   theme_minimal()+
-  theme(axis.text.x=element_text(size= 7.5,angle=70, hjust=0.5))
+  theme(axis.text.x=element_text(size= 7.5,angle=70, hjust=1))
 ```
 
 ## Plotting the distribution of sighting duration in each state

@@ -21,7 +21,7 @@ library("tidyverse")
 
 ```
 ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.4     ✔ readr     2.1.5
+## ✔ dplyr     1.1.4     ✔ readr     2.1.4
 ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
 ## ✔ ggplot2   3.4.4     ✔ tibble    3.2.1
 ## ✔ lubridate 1.9.3     ✔ tidyr     1.3.0
@@ -61,10 +61,6 @@ library("ggmap")
 library("dplyr")
 library("RColorBrewer")
 library("paletteer")
-```
-
-```
-## Warning: package 'paletteer' was built under R version 4.3.3
 ```
 
 ## Pre-processing the data set:
@@ -154,29 +150,12 @@ ufo2 <- ufo %>%
   separate(datetime, into = c("day", "month","year"), sep="/") %>%
   separate(year, into = c("year", "time"), sep = " ") %>%
   select(-duration_hours_min, -comments, -date_posted) %>%
+  filter(country=="us", latitude!=0, longitude!=0,  !is.na(latitude), !is.na(longitude)) %>%
   mutate(year=as.factor(year)) %>%
   mutate(latitude=as.numeric(latitude)) %>%
   mutate(longitude=as.numeric(longitude)) %>%
   mutate(shape=as.factor(shape)) %>%
-  mutate(state=as.factor(state)) %>%
-  filter(country=="us", latitude!=0, longitude!=0)
-```
-
-```
-## Warning: There was 1 warning in `mutate()`.
-## ℹ In argument: `latitude = as.numeric(latitude)`.
-## Caused by warning:
-## ! NAs introduced by coercion
-```
-
-```
-## Warning: There was 1 warning in `mutate()`.
-## ℹ In argument: `longitude = as.numeric(longitude)`.
-## Caused by warning:
-## ! NAs introduced by coercion
-```
-
-```r
+  mutate(state=as.factor(state))
 ufo2
 ```
 
@@ -196,10 +175,6 @@ ufo2
 ## 10 10    10    1970  16:00 bellmo… ny    us      disk              1800     40.7
 ## # ℹ 70,283 more rows
 ## # ℹ 1 more variable: longitude <dbl>
-```
-
-```r
-#I tried to condense all the data set pre-processing under this one chunk. It seems to work, but it gives an error though idk why :/
 ```
 ## Creating a map of UFO sightings in the US
 ### Loading API key
@@ -258,7 +233,7 @@ ggmap(alien_map)
 ```r
 ggmap(alien_map) + 
   geom_point(data = ufo2, aes(longitude, latitude), size=0.1) +
-  labs(x= "Longitude", y= "Latitude", title="UFO Sightings in the U.S")
+  labs(x= "Longitude", y= "Latitude", title="UFO Sightings in the U.S (1910 - 2014)")
 ```
 
 ![](ufo_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
@@ -325,7 +300,7 @@ ggplot(sightings_summary, aes(x = year, y = sightings, group = 1))+
        y = "Number of Sightings")+
   scale_x_discrete(breaks = seq(1910,2014, by = 3))+
   theme_minimal()+
-  theme(axis.text.x=element_text(size= 7.5,angle=70, hjust=0.5))
+  theme(axis.text.x=element_text(size= 7.5,angle=70, hjust=1))
 ```
 
 ![](ufo_files/figure-html/unnamed-chunk-17-1.png)<!-- -->

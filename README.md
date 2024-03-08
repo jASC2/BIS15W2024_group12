@@ -5,7 +5,7 @@ By: Carmen Doria, Dellaraam Pourkeramati, and Jaskaran Halait
 ## Overview
 This repository serves as a centralized location for organizing and managing the data 
 of UFO sightings. The data was sourced from the UFO Sightings dataset
-available on Kaggle, accessible [here.]https://www.kaggle.com/datasets/NUFORC/ufo-sightings
+available on Kaggle, accessible here: https://www.kaggle.com/datasets/NUFORC/ufo-sightings
 
 ## Contents
 - ufo_data: This file contains the original data obtained from the Kaggle dataset

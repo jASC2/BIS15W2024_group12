@@ -2,12 +2,12 @@
 UFO Sightings BIS015L Group Project
 By: Carmen Doria, Dellaraam Pourkeramati, and Jaskaran Halait
 
-##Overview
+## Overview
 This repository serves as a centralized location for organizing and managing the data 
 of UFO sightings. The data was sourced from the UFO Sightings dataset
-available on Kaggle, accessible [here.]:https://www.kaggle.com/datasets/NUFORC/ufo-sightings
+available on Kaggle, accessible [here.]https://www.kaggle.com/datasets/NUFORC/ufo-sightings
 
-##Contents
+## Contents
 - ufo_data: This file contains the original data obtained from the Kaggle dataset
 - ufo_files: Within this folder, you can find PNG files of plots generated using our RMD file.
 These were generated as part of our data cleanup and visualization process.

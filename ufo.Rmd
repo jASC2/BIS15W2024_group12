@@ -90,7 +90,7 @@ ggmap(alien_map) +
 ```
 ## Ploting the number of UFO sightings over the years
 ```{r}
-names(ufo2)
+str(ufo2)
 ```
 
 ### Creating a summary table of the yearly sightings listed in descending order
@@ -202,3 +202,44 @@ ufo2 %>%
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 #why are there still unknowns here?
 ```
+
+## ShinyApp
+```{r}
+library(shiny)
+library(shinydashboard)
+```
+```{r}
+ui <- fluidPage(
+  titlePanel("UFO Sightings Explorer"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("state", "Select State:", choices = c("All", levels(ufo2$state))),
+      selectInput("shape", "Select Shape:", choices = c("All", levels(ufo2$shape))),
+      sliderInput("duration", "Select Duration (seconds):", min = 0, max = 3600, value = c(0, 3600))
+    ),
+    mainPanel(
+      plotOutput("ufo_plot")
+    )
+  )
+)
+
+# Define server logic
+server <- function(input, output) {
+  output$ufo_plot <- renderPlot({
+    filtered_data <- ufo2 %>%
+      filter(if (input$state != "All") state == input$state else TRUE) %>%
+      filter(if (input$shape != "All") shape == input$shape else TRUE) %>%
+      filter(duration_seconds >= input$duration[1] & duration_seconds <= input$duration[2])
+    
+    # Plotting the filtered data
+    plot(filtered_data$longitude, filtered_data$latitude, 
+         col = "blue", pch = 20, 
+         xlab = "Longitude", ylab = "Latitude",
+         main = "UFO Sightings Map")
+  })
+}
+
+# Run the application
+shinyApp
+```
+

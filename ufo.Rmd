@@ -211,39 +211,27 @@ library(shinythemes)
 library(shiny)
 library(shinydashboard)
 ```
-```{r}
-ui <- fluidPage(
-  theme = shinytheme("yeti"),
-  # App title 
-  tags$head(
-    tags$style(
-      HTML("
-           .title {
-             font-family: 'Chewy', cursive;
-             font-size: 24px;
-           }
-           "
-      )
-    ),
-  ),
-  headerPanel(
-    div(class = "title", "UFO Tracker")
-  ),
 
-  # Sidebar panel for inputs
-  sidebarPanel(
-    selectInput("shape", "Select UFO Shape", choices = c(unique(ufo2$shape))),
-    selectInput("state", "Select State", choices = c(unique(ufo2$state)))
-  ),
-  
-  # Main panel for displaying outputs 
-  mainPanel(
-    plotOutput("plot")
+```{r}
+ui <- dashboardPage(
+  dashboardHeader(title = "UFO Tracker"),
+  dashboardSidebar(disable = TRUE),
+  dashboardBody(
+    
+    # Main content
+    fluidRow(
+      box(width = 3,
+          selectInput("shape", "Select UFO Shape", choices = c(unique(ufo2$shape))),
+          selectInput("state", "Select State", choices = c(unique(ufo2$state)))
+      ),
+      box(width = 8,
+          plotOutput("plot", width = "600px", height = "500px"))
+    )
   )
 )
 
 # Define server logic 
-server <- function(input, output) {
+server <- function(input, output, session) {
   
   # Render plot based on selected UFO shape and state
   output$plot <- renderPlot({
@@ -258,13 +246,14 @@ server <- function(input, output) {
     } else {
       # Otherwise, plot the data
       ggplot(filtered_data, aes(x = month)) +
-        geom_bar(fill = "skyblue") +
+        geom_bar(fill = "#43bfc7") +
         labs(title = paste("UFO Sightings for Shape:", input$shape, "and State:", input$state),
              x = "Month",
              y = "Number of Sightings") +
         theme_linedraw()
     }
   })
+  session$onSessionEnded(stopApp)
 }
 
 # Start the app

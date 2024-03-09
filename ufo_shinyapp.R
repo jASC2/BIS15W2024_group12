@@ -21,6 +21,11 @@ ufo2 <- ufo %>%
   mutate(shape=as.factor(shape)) %>%
   mutate(state=as.factor(state))
 
+ufo2 <- mutate(ufo2, month=as.numeric(month))
+month_order <- c("01", "02", "03", "04", "05", "06", "07", 
+                 "08", "09", "10", "11", "12")
+ufo2$month_index <- month_order[ufo2$month]
+
 ui <- dashboardPage(
   dashboardHeader(title = "UFO Tracker"),
   dashboardSidebar(disable = TRUE),
@@ -53,7 +58,7 @@ server <- function(input, output, session) {
       plot(1, type = "n", axes = FALSE, xlab = "", ylab = "", main = "No data available")
     } else {
       # Otherwise, plot the data
-      ggplot(filtered_data, aes(x = month)) +
+      ggplot(filtered_data, aes(x = month_index)) +
         geom_bar(fill = "#43bfc7") +
         labs(title = paste("UFO Sightings for Shape:", input$shape, "and State:", input$state),
              x = "Month",

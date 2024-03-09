@@ -21,8 +21,6 @@ library("naniar")
 library("janitor")
 library("ggmap")
 library("dplyr")
-library("RColorBrewer")
-library("paletteer")
 ```
 
 ## Pre-processing the data set:
@@ -44,7 +42,7 @@ summary(ufo)
 ### Removing unnecessary data, seperating dates, changing data types, and filtering out anything not in the US
 ```{r}
 ufo2 <- ufo %>%
-  separate(datetime, into = c("day", "month","year"), sep="/") %>%
+  separate(datetime, into = c("month", "day","year"), sep="/") %>%
   separate(year, into = c("year", "time"), sep = " ") %>%
   select(-duration_hours_min, -comments, -date_posted) %>%
   filter(country=="us", latitude!=0, longitude!=0,  !is.na(latitude), !is.na(longitude)) %>%
@@ -53,7 +51,6 @@ ufo2 <- ufo %>%
   mutate(longitude=as.numeric(longitude)) %>%
   mutate(shape=as.factor(shape)) %>%
   mutate(state=as.factor(state))
-ufo2
 ```
 ## Creating a map of UFO sightings in the US
 ### Loading API key
@@ -204,42 +201,75 @@ ufo2 %>%
 ```
 
 ## ShinyApp
+
+```{r}
+#install.packages("shinythemes")
+library(shinythemes)
+```
+
 ```{r}
 library(shiny)
 library(shinydashboard)
 ```
 ```{r}
 ui <- fluidPage(
-  titlePanel("UFO Sightings Explorer"),
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("state", "Select State:", choices = c("All", levels(ufo2$state))),
-      selectInput("shape", "Select Shape:", choices = c("All", levels(ufo2$shape))),
-      sliderInput("duration", "Select Duration (seconds):", min = 0, max = 3600, value = c(0, 3600))
+  theme = shinytheme("yeti"),
+  # App title 
+  tags$head(
+    tags$style(
+      HTML("
+           .title {
+             font-family: 'Chewy', cursive;
+             font-size: 24px;
+           }
+           "
+      )
     ),
-    mainPanel(
-      plotOutput("ufo_plot")
-    )
+  ),
+  headerPanel(
+    div(class = "title", "UFO Tracker")
+  ),
+
+  # Sidebar panel for inputs
+  sidebarPanel(
+    selectInput("shape", "Select UFO Shape", choices = c(unique(ufo2$shape))),
+    selectInput("state", "Select State", choices = c(unique(ufo2$state)))
+  ),
+  
+  # Main panel for displaying outputs 
+  mainPanel(
+    plotOutput("plot")
   )
 )
 
-# Define server logic
+# Define server logic 
 server <- function(input, output) {
-  output$ufo_plot <- renderPlot({
-    filtered_data <- ufo2 %>%
-      filter(if (input$state != "All") state == input$state else TRUE) %>%
-      filter(if (input$shape != "All") shape == input$shape else TRUE) %>%
-      filter(duration_seconds >= input$duration[1] & duration_seconds <= input$duration[2])
+  
+  # Render plot based on selected UFO shape and state
+  output$plot <- renderPlot({
+    req(input$shape, input$state)  # Require both inputs to be selected
     
-    # Plotting the filtered data
-    plot(filtered_data$longitude, filtered_data$latitude, 
-         col = "blue", pch = 20, 
-         xlab = "Longitude", ylab = "Latitude",
-         main = "UFO Sightings Map")
+    filtered_data <- ufo2 %>%
+      filter(shape == input$shape & state == input$state)
+    
+    if (nrow(filtered_data) == 0) {
+      # If no data found, display a message
+      plot(1, type = "n", axes = FALSE, xlab = "", ylab = "", main = "No data available")
+    } else {
+      # Otherwise, plot the data
+      ggplot(filtered_data, aes(x = month)) +
+        geom_bar(fill = "skyblue") +
+        labs(title = paste("UFO Sightings for Shape:", input$shape, "and State:", input$state),
+             x = "Month",
+             y = "Number of Sightings") +
+        theme_linedraw()
+    }
   })
 }
 
-# Run the application
-shinyApp
+# Start the app
+shinyApp(ui, server)
 ```
+
+
 

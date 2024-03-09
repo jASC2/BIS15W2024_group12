@@ -23,7 +23,7 @@ library("ggmap")
 library("dplyr")
 ```
 
-## Pre-processing the data set:
+## Pre-processing the data set
 
 ### Importing the data and assigning "NA" to any missing values
 ```{r}
@@ -39,7 +39,7 @@ glimpse(ufo)
 summary(ufo)
 ```
 
-### Removing unnecessary data, seperating dates, changing data types, and filtering out anything not in the US
+### Removing unnecessary data, seperating dates, changing data types as needed, and filtering out any sighting not in the US
 ```{r}
 ufo2 <- ufo %>%
   separate(datetime, into = c("month", "day","year"), sep="/") %>%
@@ -52,6 +52,7 @@ ufo2 <- ufo %>%
   mutate(shape=as.factor(shape)) %>%
   mutate(state=as.factor(state))
 ```
+
 ## Creating a map of UFO sightings in the US
 ### Loading API key
 ```{r}
@@ -75,6 +76,7 @@ alien_bbox <- make_bbox(longitude, latitude, f = 0.03)
 ```{r}
 alien_map <-  get_stadiamap(alien_bbox, maptype = "stamen_terrain", zoom=5)
 ```
+
 ```{r}
 ggmap(alien_map)
 ```
@@ -83,8 +85,19 @@ ggmap(alien_map)
 ```{r}
 ggmap(alien_map) + 
   geom_point(data = ufo2, aes(longitude, latitude), size=0.1) +
-  labs(x= "Longitude", y= "Latitude", title="UFO Sightings in the U.S (1910 - 2014)")
+  labs(x= "Longitude", y= "Latitude", title="UFO Sightings in the U.S. (1910 - 2014)")
 ```
+### Creating an alternate visualization of the sighting map
+
+```{r}
+ggplot(ufo2, aes(x = longitude, y = latitude)) +
+  geom_tile(stat = "density2d", aes(fill = ..density..), color = "white") +
+  scale_fill_viridis_c() +  # Choose a color scale
+  labs(title = "Heatmap of UFO Sightings in the U.S. (1910 - 2014)", x = "Longitude", y = "Latitude", 
+       fill = "Density") +
+  theme_minimal()
+```
+
 ## Ploting the number of UFO sightings over the years
 ```{r}
 str(ufo2)
@@ -110,12 +123,11 @@ sightings_summary <- ufo2 %>%
 sightings_summary$sightings <- as.numeric(sightings_summary$sightings)
 ```
 
-
 ```{r}
 ggplot(sightings_summary, aes(x = year, y = sightings, group = 1))+
   geom_point(size = 1)+
   geom_path(color = "blue")+
-  labs(title = "UFO Sightings Over the Years (1910-2014)",
+  labs(title = "Yearly UFO Sightings in the U.S. (1910-2014)",
        x= "Year",
        y = "Number of Sightings")+
   scale_x_discrete(breaks = seq(1910,2014, by = 3))+
@@ -123,55 +135,27 @@ ggplot(sightings_summary, aes(x = year, y = sightings, group = 1))+
   theme(axis.text.x=element_text(size= 7.5,angle=70, hjust=1))
 ```
 
-## Plotting the distribution of sighting duration in each state
-### Creating a summary table of the average sighting duration in each state
-```{r}
-ufo2_avg_time <- ufo2 %>% 
-  filter(!is.na(duration_seconds & duration_seconds != 0) & !is.na(shape)) %>% 
-  group_by(state, shape) %>% 
-  summarise(avg_secs = mean(duration_seconds)) %>%
-  arrange(desc(avg_secs))
-ufo2_avg_time
-```
-
-### Compiling the plot
-```{r}
-ufo2_avg_time %>%
-  ggplot(aes(x = state, y = avg_secs))+
-  geom_col()+
-  labs(title = "Average Duration of UFO Sightings by State",
-       x = "State",
-       y= "Duration (Seconds)")+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-```{r}
-ggplot(ufo2, aes(x = longitude, y = latitude)) +
-  geom_tile(stat = "density2d", aes(fill = ..density..), color = "white") +
-  scale_fill_viridis_c() +  # Choose a color scale
-  labs(title = "Heatmap of UFO Sightings", x = "Longitude", y = "Latitude", fill = "Density") +
-  theme_minimal()
-```
-
 ## Plotting the total number of sightings in each state
 ### Creating a summary table of the total recorded sightings in each state
 ```{r}
 ufo2 %>% 
   group_by(state) %>% 
-  summarise(n_sightings = n()) %>%
-  arrange(desc(n_sightings))
+  summarise(sightings = n()) %>%
+  arrange(desc(sightings))
 ```
 
 ### Compiling the plot
 ```{r}
 ufo2 %>% 
   group_by(state) %>% 
-  summarise(n_sightings = n()) %>%
-  arrange(desc(n_sightings)) %>%
-  ggplot(aes(x = state, y = n_sightings))+
-  geom_col()+
-  labs(title = "Total Recorded UFO Sightings by State",
+  summarise(sightings = n()) %>%
+  arrange(desc(sightings)) %>%
+  ggplot(aes(x = state, y = sightings))+
+  geom_col(fill = "blue")+
+  labs(title = "Total Recorded UFO Sightings by State (1910 - 2014)",
        x = "State",
        y= "Number of Sightings")+
+  theme_minimal()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
@@ -179,25 +163,26 @@ ufo2 %>%
 ### Creating a summary table of the total recorded sightings in each state
 ```{r}
 ufo2 %>% 
+  filter(!is.na(shape), shape != 'unknown') %>% #added this to remove the 'unknowns' in this column that evaded being assigned NA
   group_by(shape) %>% 
-  summarise(n_sightings = n()) %>%
-  arrange(desc(n_sightings))
+  summarise(sightings = n()) %>%
+  arrange(desc(sightings))
 ```
 
 ### Compiling the plot
 ```{r}
 ufo2 %>% 
-  filter(!is.na(shape)) %>%
+  filter(!is.na(shape), shape != 'unknown') %>%
   group_by(shape) %>% 
   summarise(n_sightings = n()) %>%
   arrange(desc(n_sightings)) %>%
   ggplot(aes(x = shape, y = n_sightings))+
-    geom_col()+
-    labs(title = "Total Recorded UFO Sightings by Sighting Shape",
+    geom_col(fill = "blue")+
+    labs(title = "Total Recorded UFO Sightings by Sighting Shape (1910 - 2014)",
        x = "Shape",
        y= "Number of Sightings")+
+    theme_minimal()+
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
-#why are there still unknowns here?
 ```
 
 ## ShinyApp

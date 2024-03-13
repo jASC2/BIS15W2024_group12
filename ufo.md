@@ -8,7 +8,7 @@ date: "2024-03-03"
 
 
 
-## Installing & loading any required packages:
+## Installing & loading any required packages
 
 ```r
 #install.packages("paletteer")
@@ -21,10 +21,10 @@ library("tidyverse")
 
 ```
 ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.3     ✔ readr     2.1.4
-## ✔ forcats   1.0.0     ✔ stringr   1.5.0
-## ✔ ggplot2   3.4.3     ✔ tibble    3.2.1
-## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+## ✔ dplyr     1.1.4     ✔ readr     2.1.5
+## ✔ forcats   1.0.0     ✔ stringr   1.5.1
+## ✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+## ✔ lubridate 1.9.3     ✔ tidyr     1.3.0
 ## ✔ purrr     1.0.2     
 ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
@@ -157,11 +157,6 @@ ufo2 <- ufo %>%
 ```
 
 ## Creating a map of UFO sightings in the US
-### Loading API key
-
-```r
-register_stadiamaps("aff428bd-8ad7-4b69-8b6b-b34301483ba9", write = FALSE)
-```
 
 ### Creating a bounding box for the map
 
@@ -207,7 +202,7 @@ alien_map <-  get_stadiamap(alien_bbox, maptype = "stamen_terrain", zoom=5)
 ggmap(alien_map)
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
 ### Compiling the final map
 
@@ -217,7 +212,7 @@ ggmap(alien_map) +
   labs(x= "Longitude", y= "Latitude", title="UFO Sightings in the U.S. (1910 - 2014)")
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
 ### Creating an alternate visualization of the sighting map
 
 
@@ -238,7 +233,7 @@ ggplot(ufo2, aes(x = longitude, y = latitude)) +
 ## generated.
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 ## Ploting the number of UFO sightings over the years
 
@@ -314,7 +309,7 @@ ggplot(sightings_summary, aes(x = year, y = sightings, group = 1))+
   theme(axis.text.x=element_text(size= 7.5,angle=70, hjust=1))
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
 
 ## Plotting the total number of sightings in each state
 ### Creating a summary table of the total recorded sightings in each state
@@ -359,7 +354,7 @@ ufo2 %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
 
 ## Plotting the frequency of sightings organized by shape
 ### Creating a summary table of the total recorded sightings in each state
@@ -406,18 +401,19 @@ ufo2 %>%
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-![](ufo_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+![](ufo_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
 
 ## ShinyApp
 
+### Installing & loading any required packages
 
 ```r
 #install.packages("shinythemes")
-library(shinythemes)
 ```
 
 
 ```r
+library(shinythemes)
 library(shiny)
 library(shinydashboard)
 ```
@@ -432,6 +428,16 @@ library(shinydashboard)
 ## 
 ##     box
 ```
+
+### Creating a new column with the month names listed
+
+```r
+ufo2 <- mutate(ufo2, month=as.numeric(month))
+month_order <- c("01", "02", "03", "04", "05", "06", "07", 
+                 "08", "09", "10", "11", "12")
+ufo2$month_index <- month_order[ufo2$month]
+```
+
 
 
 ```r
@@ -467,7 +473,7 @@ server <- function(input, output, session) {
       plot(1, type = "n", axes = FALSE, xlab = "", ylab = "", main = "No data available")
     } else {
       # Otherwise, plot the data
-      ggplot(filtered_data, aes(x = month)) +
+      ggplot(filtered_data, aes(x = month_index)) +
         geom_bar(fill = "#43bfc7") +
         labs(title = paste("UFO Sightings for Shape:", input$shape, "and State:", input$state),
              x = "Month",

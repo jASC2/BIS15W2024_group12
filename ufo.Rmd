@@ -54,10 +54,6 @@ ufo2 <- ufo %>%
 ```
 
 ## Creating a map of UFO sightings in the US
-### Loading API key
-```{r}
-register_stadiamaps("aff428bd-8ad7-4b69-8b6b-b34301483ba9", write = FALSE)
-```
 
 ### Creating a bounding box for the map
 ```{r}

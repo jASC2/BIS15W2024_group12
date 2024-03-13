@@ -1,6 +1,6 @@
 # BIS15W2024_group12
 UFO Sightings BIS015L Group Project
-By: Carmen Doria, Dellaraam Pourkeramati, and Jaskaran Halait
+Carmen Doria, Dellaraam Pourkeramati, and Jaskaran Halait
 
 ## Overview
 This repository serves as a centralized location for organizing and managing the data 
@@ -9,6 +9,6 @@ available on Kaggle, accessible here: https://www.kaggle.com/datasets/NUFORC/ufo
 
 ## Contents
 - ufo_data: This file contains the original data obtained from the Kaggle dataset
-- ufo_files: Within this folder, you can find PNG files of plots generated using our RMD file.
-These were generated as part of our data cleanup and visualization process.
+- ufo_files: Within this folder, you can find PNG files of plots generated using our RMD file. These were generated as part of our data cleanup and visualization process.
 - ufo.Rmd: This file contains all the code we developed for data cleanup and visualization.
+- ufo_shinyapp.R: Contains an R script for an interactive Shinyapp that allows the users to select for shape and state, the outputs generate bar plots showing the number of sightings reported and the month.
